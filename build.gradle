@@ -1,9 +1,61 @@
+import org.gradle.internal.os.OperatingSystem
+
 apply plugin: "idea"
+apply plugin: "application"
+apply plugin: "groovy"
+
+mainClassName = "followinger.Followinger"
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testCompile "org.spockframework:spock-core:1.0-groovy-2.4"
+}
+
+ext {
+    generatedTestResourcesDir = file("$buildDir/generated-test-resources")
+}
+
+sourceSets.test.resources.srcDir generatedTestResourcesDir
+
+task writeTestConfig(type: WriteTestConfig) {
+    def appName = project.convention.plugins.application.applicationName
+    String path = file("$buildDir/install/$appName/bin/$appName${OperatingSystem.current().windows ? ".bat" : ""}").absolutePath
+
+    generatedTestResourcesDir = project.generatedTestResourcesDir
+    testProperties.setProperty("application.path", path)
+}
+
+processTestResources.dependsOn writeTestConfig
+
+ideaModule.dependsOn installApp
+
+test.dependsOn installApp
 
 idea {
     project {
         jdkName = "1.8"
         languageLevel = "1.8"
         vcs = "Git"
+    }
+}
+
+class WriteTestConfig extends DefaultTask {
+
+    File generatedTestResourcesDir
+
+    @Input
+    Properties testProperties = new Properties()
+
+    @OutputFile
+    File getTestConfigPropertiesFile() {
+        new File(generatedTestResourcesDir, 'test-config.properties')
+    }
+
+    @TaskAction
+    def generate() {
+        testConfigPropertiesFile.withOutputStream { testProperties.store(it, null) }
     }
 }
