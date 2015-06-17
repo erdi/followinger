@@ -1,6 +1,6 @@
 package followinger.fixture
 
-import java.util.concurrent.*
+import followinger.stream.TimingOutReader
 
 class FollowingerRunner {
 
@@ -57,33 +57,5 @@ class FollowingerRunner {
 
     void messagePrinted(String message) {
         assert reader.readLine() == message
-    }
-
-    private static class TimingOutReader extends Reader {
-        
-        private final Reader reader
-        private final ExecutorService executor = Executors.newSingleThreadExecutor()
-        
-        TimingOutReader(Reader reader) {
-            this.reader = reader
-        }
-        
-        @Override
-        int read(char[] cbuf, int off, int len) throws IOException {
-            Future<Integer> readFuture = executor.submit({
-                reader.read(cbuf, off, len)
-            } as Callable<Integer>)
-            try {
-                readFuture.get(2, TimeUnit.SECONDS)
-            } catch (TimeoutException e) {
-                throw new AssertionError("Expected new data to be available but none has been received")
-            }
-        }
-    
-        @Override
-        void close() throws IOException {
-            executor.shutdownNow()
-            reader.close()
-        }
-    }
+    } 
 }

@@ -17,4 +17,24 @@ class EndToEndSpec extends Specification {
         then:
         app.messagePrinted("I love the weather today")
     }
+    
+    def "multiple users can post and read messages"() {
+        given:
+        app.postMessage("Alice", "I love the weather today")
+        app.postMessage("Bob", "Damn! We lost!")
+        app.postMessage("Bob", "Good game though.")
+        
+        when:
+        app.showMessages("Alice")
+
+        then:
+        app.messagePrinted("I love the weather today")
+        
+        when:
+        app.showMessages("Bob")
+        
+        then:
+        app.messagePrinted("Good game though.")
+        app.messagePrinted("Damn! We lost!")
+    }
 }
