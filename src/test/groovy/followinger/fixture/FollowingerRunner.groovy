@@ -1,14 +1,16 @@
 package followinger.fixture
 
 import followinger.stream.TimingOutReader
+import org.junit.After
+import org.junit.Before
 
 import java.util.regex.Pattern
 
-class FollowingerRunner {
+trait FollowingerRunner {
 
-    private final Process process
-    private final PrintWriter writer
-    private final BufferedReader reader
+    private Process process
+    private PrintWriter writer
+    private BufferedReader reader
 
     private String getApplicationPath() {
         def testConfigProperties = new Properties()
@@ -16,13 +18,15 @@ class FollowingerRunner {
         testConfigProperties.getProperty("application.path")
     }
 
-    FollowingerRunner() {
-        process = new ProcessBuilder(applicationPath).start()
+    @Before
+    def init() {
+        process = new ProcessBuilder(getApplicationPath()).start()
         writer = new PrintWriter(new OutputStreamWriter(process.outputStream), true)
         reader = new BufferedReader(new TimingOutReader(new InputStreamReader(process.inputStream)))
     }
     
-    void close() {
+    @After
+    def tearDown() {
         process.destroy()
         try { reader.close() } catch (Exception e) {}
         try { writer.close() } catch (Exception e) {}
@@ -50,6 +54,8 @@ class FollowingerRunner {
     }
     
     void postMessage(String author, String message) {
+        //make sure that no two messages are posted in the same instant to ensure deterministic ordering of messages on user walls 
+        sleep(1)
         sendCommand("$author -> $message")
     }
     
@@ -61,5 +67,17 @@ class FollowingerRunner {
         def printed = reader.readLine()
         def pattern = /${Pattern.quote(message)} \((just now|\d+ \w+ ago)\)/
         assert printed =~ pattern
-    } 
+    }
+    
+    void messagePrinted(String author, String message) {
+        messagePrinted("$author - $message")
+    }
+
+    void follow(String follower, String followed) {
+        sendCommand("$follower follows $followed")
+    }
+
+    void showWall(String user) {
+        sendCommand("$user wall")
+    }
 }

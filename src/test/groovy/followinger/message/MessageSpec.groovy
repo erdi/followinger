@@ -10,12 +10,13 @@ class MessageSpec extends Specification {
     
     def "equality"() {
         given:
-        def message = new Message("text", now)
+        def message = new Message("Alice", "text", now)
         
         expect:
         message == message
-        message == new Message("text", now)
-        message != new Message("other text", now)
-        message != new Message("text", now.plusSeconds(1))
+        message == new Message("Alice", "text", now)
+        message != new Message("Bob", "text", now)
+        message != new Message("Alice", "other text", now)
+        message != new Message("Alice", "text", now.plusSeconds(1))
     }
 }

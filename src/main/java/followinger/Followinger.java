@@ -34,7 +34,8 @@ public class Followinger {
         Clock clock = Clock.systemDefaultZone();
         MessagePrinter messagePrinter = new MessagePrinter(System.out, clock);
         MessageStore messageStore = new MessageStore(clock);
-        CommandProcessor commandProcessor = new CommandProcessor(messageStore, messagePrinter);
+        FollowerStore followerStore = new FollowerStore();
+        CommandProcessor commandProcessor = new CommandProcessor(messageStore, messagePrinter, followerStore);
         Followinger followinger = new Followinger(System.in, System.out, commandProcessor);
         try {
             followinger.processInput();

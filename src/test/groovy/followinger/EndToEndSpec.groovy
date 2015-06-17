@@ -1,40 +1,71 @@
 package followinger
 
 import followinger.fixture.FollowingerRunner
-import spock.lang.AutoCleanup
 import spock.lang.Specification
 
-class EndToEndSpec extends Specification {
+class EndToEndSpec extends Specification implements FollowingerRunner {
 
-    @AutoCleanup
-    FollowingerRunner app = new FollowingerRunner()
+    def postAlicesMessage() {
+        postMessage("Alice", "I love the weather today")
+    }
+    
+    def postBobsMessages() {
+        postMessage("Bob", "Damn! We lost!")
+        postMessage("Bob", "Good game though.")
+    }
     
     def "can post and read messages for a single user"() {
         when:
-        app.postMessage("Alice", "I love the weather today")
-        app.showMessages("Alice")
+        postMessage("Alice", "I love the weather today")
+        showMessages("Alice")
         
         then:
-        app.messagePrinted("I love the weather today")
+        messagePrinted("I love the weather today")
     }
     
     def "multiple users can post and read messages"() {
-        given:
-        app.postMessage("Alice", "I love the weather today")
-        app.postMessage("Bob", "Damn! We lost!")
-        app.postMessage("Bob", "Good game though.")
-        
         when:
-        app.showMessages("Alice")
+        postAlicesMessage()
+        postBobsMessages()
+        showMessages("Alice")
 
         then:
-        app.messagePrinted("I love the weather today")
+        messagePrinted("I love the weather today")
         
         when:
-        app.showMessages("Bob")
+        showMessages("Bob")
         
         then:
-        app.messagePrinted("Good game though.")
-        app.messagePrinted("Damn! We lost!")
+        messagePrinted("Good game though.")
+        messagePrinted("Damn! We lost!")
+    }
+    
+    def "following users"() {
+        given:
+        postAlicesMessage()
+        postBobsMessages()
+        postMessage("Charlie", "I'm in New York today! Anyone want to have a coffee?")
+        
+        when:
+        follow("Charlie", "Alice")
+        
+        and:
+        showWall("Charlie")
+        
+        then:
+        messagePrinted("Charlie", "I'm in New York today! Anyone want to have a coffee?")
+        messagePrinted("Alice", "I love the weather today")
+        
+        when:
+        follow("Charlie", "Bob")
+        
+        and:
+        showWall("Charlie")
+        
+        then:
+        messagePrinted("Charlie", "I'm in New York today! Anyone want to have a coffee?")
+        messagePrinted("Bob", "Good game though.")
+        messagePrinted("Bob", "Damn! We lost!")
+        messagePrinted("Alice", "I love the weather today")
     }
 }

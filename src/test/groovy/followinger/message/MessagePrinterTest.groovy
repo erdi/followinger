@@ -25,8 +25,8 @@ class MessagePrinterTest extends Specification {
     def "messages are printed to the stream that the printer operates on"() {
         when:
         messagePrinter.printMessages([
-                new Message("first message", now),
-                new Message("second message", now)
+                new Message("first author", "first message", now),
+                new Message("second author", "second message", now)
         ])
         output.close()
 
@@ -36,14 +36,33 @@ class MessagePrinterTest extends Specification {
         reader.readLine() == null
     }
 
+    def "messages can be prefixed with author"() {
+        when:
+        messagePrinter.printMessagesWithAuthors([
+                new Message("first author", "first message", now),
+                new Message("second author", "second message", now)
+        ])
+        output.close()
+
+        then:
+        reader.readLine() == "first author - first message (just now)"
+        reader.readLine() == "second author - second message (just now)"
+        reader.readLine() == null
+    }
+
     @Unroll("printing a message that was posted #when")
     def "printed messages contain the time that has elapsed since they were posted"() {
+        given:
+        def message = new Message("author", "text", timestamp)
+        
         when:
-        messagePrinter.printMessages([new Message("text", timestamp)])
+        messagePrinter.printMessages([message])
+        messagePrinter.printMessagesWithAuthors([message])
         output.close()
 
         then:
         reader.readLine() == "text ($when)"
+        reader.readLine() == "author - text ($when)"
         reader.readLine() == null
 
         where:

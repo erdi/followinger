@@ -24,7 +24,7 @@ public class MessageStore {
     }
     
     public void addMessage(String author, String text) {
-        mutableMessagesFor(author).add(new Message(text, Instant.now(clock)));
+        mutableMessagesFor(author).add(new Message(author, text, Instant.now(clock)));
     }
     
     public List<Message> messagesFor(String author) {

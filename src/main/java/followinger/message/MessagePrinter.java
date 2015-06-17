@@ -1,5 +1,7 @@
 package followinger.message;
 
+import com.google.common.base.Function;
+
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
@@ -30,13 +32,20 @@ public class MessagePrinter {
         }).filter(Objects::nonNull).map(PassedDuration::format).findFirst().orElse("just now");
     }
 
-    public void printMessages(List<Message> messages) {
+    private void printMessages(List<Message> messages, Function<Message, String> textExtractor) {
         Instant now = Instant.now(clock);
         messages.stream()
-                .map(message -> format("%s (%s)", message.getText(), formatTimeSince(message.getTimestamp(), now)))
+                .map(message -> format("%s (%s)", textExtractor.apply(message), formatTimeSince(message.getTimestamp(), now)))
                 .forEach(out::println);
     }
     
+    public void printMessages(List<Message> messages) {
+        printMessages(messages, Message::getText);
+    }
+
+    public void printMessagesWithAuthors(List<Message> messages) {
+        printMessages(messages, message -> String.format("%s - %s", message.getAuthor(), message.getText()));
+    }
     private static class PassedDuration {
         private final long amount;
         private final ChronoUnit unit;

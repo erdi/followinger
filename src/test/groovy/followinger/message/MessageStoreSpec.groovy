@@ -20,8 +20,8 @@ class MessageStoreSpec extends Specification {
         messageStore.addMessage("Bob", "Good game though.")
         
         then:
-        messageStore.messagesFor("Alice")*.text == ["I love the weather today"]
-        messageStore.messagesFor("Bob")*.text == ["Damn! We lost!", "Good game though."]
+        messageStore.messagesFor("Alice") == [new Message("Alice", "I love the weather today", now)]
+        messageStore.messagesFor("Bob") == [new Message("Bob", "Damn! We lost!", now), new Message("Bob", "Good game though.", now)]
     }
     
     def "messages are timestamped upon storing"() {
@@ -38,8 +38,8 @@ class MessageStoreSpec extends Specification {
         
         then:
         messageStore.messagesFor("Bob") == [
-                new Message("Damn! We lost!", fiveSecondsAgo),
-                new Message("Good game though.", now)
+                new Message("Bob", "Damn! We lost!", fiveSecondsAgo),
+                new Message("Bob", "Good game though.", now)
         ]
     }
     
