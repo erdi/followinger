@@ -2,6 +2,9 @@ package followinger;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import followinger.message.Message;
+import followinger.message.MessagePrinter;
+import followinger.message.MessageStore;
 
 import java.util.List;
 import java.util.function.Consumer;
@@ -16,7 +19,7 @@ public class CommandProcessor {
         this.parsers = ImmutableList.of(
                 new CommandParser("(?<author>\\w+) -> (?<text>.*)", matcher -> messageStore.addMessage(matcher.group("author"), matcher.group("text"))),
                 new CommandParser("(?<author>\\w+)", matcher -> {
-                    List<String> messages = messageStore.messagesFor(matcher.group("author"));
+                    List<Message> messages = messageStore.messagesFor(matcher.group("author"));
                     messagePrinter.printMessages(Lists.reverse(messages));
                 })
         );

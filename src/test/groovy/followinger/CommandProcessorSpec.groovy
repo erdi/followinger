@@ -1,7 +1,12 @@
 package followinger
 
+import followinger.message.Message
+import followinger.message.MessagePrinter
+import followinger.message.MessageStore
 import spock.lang.Specification
 import spock.lang.Unroll
+
+import java.time.Instant
 
 class CommandProcessorSpec extends Specification {
 
@@ -44,8 +49,12 @@ class CommandProcessorSpec extends Specification {
         1 * printer.printMessages(messagesPrinted)
 
         where:
-        author  | messagesInStore                         | messagesPrinted
+        author  | messagesTextInStore                     | messagesTextPrinted
         "Bob"   | ["Damn! We lost!", "Good game though."] | ["Good game though.", "Damn! We lost!"]
         "Alice" | []                                      | []
+
+        now = Instant.now()
+        messagesInStore = messagesTextInStore.collect { new Message(it, now) }
+        messagesPrinted = messagesTextPrinted.collect { new Message(it, now) }
     }
 }

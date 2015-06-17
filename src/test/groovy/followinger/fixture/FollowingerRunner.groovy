@@ -2,6 +2,8 @@ package followinger.fixture
 
 import followinger.stream.TimingOutReader
 
+import java.util.regex.Pattern
+
 class FollowingerRunner {
 
     private final Process process
@@ -56,6 +58,8 @@ class FollowingerRunner {
     }
 
     void messagePrinted(String message) {
-        assert reader.readLine() == message
+        def printed = reader.readLine()
+        def pattern = /${Pattern.quote(message)} \((just now|\d+ \w+ ago)\)/
+        assert printed =~ pattern
     } 
 }

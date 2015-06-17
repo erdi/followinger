@@ -1,6 +1,10 @@
 package followinger;
 
+import followinger.message.MessagePrinter;
+import followinger.message.MessageStore;
+
 import java.io.*;
+import java.time.Clock;
 
 public class Followinger {
 
@@ -27,8 +31,9 @@ public class Followinger {
     }
 
     public static void main(String[] args) {
-        MessagePrinter messagePrinter = new MessagePrinter(System.out);
-        MessageStore messageStore = new MessageStore();
+        Clock clock = Clock.systemDefaultZone();
+        MessagePrinter messagePrinter = new MessagePrinter(System.out, clock);
+        MessageStore messageStore = new MessageStore(clock);
         CommandProcessor commandProcessor = new CommandProcessor(messageStore, messagePrinter);
         Followinger followinger = new Followinger(System.in, System.out, commandProcessor);
         try {
